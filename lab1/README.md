@@ -1,15 +1,17 @@
 # Pipe Up
 
-One sentence description
+A command to link the output of file 1 to the input of file 2, very similar to the pipe command
 
 ## Building
 
-Explain briefly how to build your program
+Use the command 'make' to build the program.
 
 ## Running
 
-Show an example run of your program, using at least two additional arguments, and what to expect
+./pipe ls cat
+This should produce the same result as the pipe command 'ls | cat'
+
 
 ## Cleaning up
 
-Explain briefly how to clean up all binary files
+Clean binary files by using 'make clean'
