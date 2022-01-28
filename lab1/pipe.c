@@ -46,17 +46,20 @@ int main(int argc, char *argv[])
 		pid_t child2 = fork();
 
 		if(child2 == 1){
-			close(fds[1]);
 			close(fds[0]);
 		}
 
 		if(child2 == 0) {
-			close(fds[1]);
 			dup2(fds[0], STDIN_FILENO);
 			close(fds[0]);
 			printf("child2 closed read pipe, redirect stdout to fds[0]\n");
 			execlp(argv[2],argv[2], (char*)NULL);
 		}
+		// I never got past trying to make ./pipe ls cat work.
+		// For some reason, it seams that ls finishes executing and parent successfully reaps child1,
+		// but child2 just hangs. It seems like it never reached End of File from the pipe buffer,
+		// eventhough ls already finished executing.
+		// I quadrouple checked closing the file descriptors, but to no avail.
 		wait(&wstatus);
 		printf("reaped child2\n");
 
@@ -166,6 +169,12 @@ int main(int argc, char *argv[])
 		}
 		
 		wait(&wstatus);
+		//trying three arguments seems to run into the same issue.
+		//Executing ./pipe ls cat wc, and it seems the first child successfully finished running,
+		//but the second child cat never reaches End of File from the pipe, so it just hangs the program
+		//The third program is not executing because of this problem.
+		//I've tried removing wait() on the second program, and got inconsistent results.
+		//I also tried checking the file descriptors, but I couldn't find the issue.
 		pid_t child3 = fork();
 		
 		if(child3 == 1) {
@@ -177,7 +186,7 @@ int main(int argc, char *argv[])
 			execlp(argv[3],argv[3],NULL);
 		}
 
-		//wait(&wstatus);
+		wait(&wstatus);
 		/*
 		if (pipe(fds[0]) == -1) {
 			fprintf(stderr, "ERROR: %s\n", strerror(errno));
