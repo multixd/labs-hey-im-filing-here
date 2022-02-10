@@ -1,16 +1,17 @@
 # You Spin Me Round Robin
 
-One line description of this code.
+A roundrobin scheduler that takes in a text file as processes and a quantum length.
 
 ## Building
 
-Explain briefly how to build your program.
+Use the command "make" in order to build the file.
 
 ## Running
 
-Show an example run of your program on the given `processes.txt` with whatever
-quantum length you want. Show the output you should expect.
+Run the program with command "./rr processes.txt 3"
+Expected results are: "Average Wait Time: 7.00
+		       Average Response Time: 2.75"
 
 ## Cleaning up
 
-Explain briefly how to clean up all binary files.
+Use make clean to clean up the binary files.

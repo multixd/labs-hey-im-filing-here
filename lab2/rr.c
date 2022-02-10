@@ -19,6 +19,10 @@ struct process {
 
   TAILQ_ENTRY(process) pointers;
 
+  bool response_time_set;
+  u32 original_burst_time;
+  bool added;
+  u32 remaining;
   /* Additional fields here */
   /* End of "Additional fields here" */
 };
@@ -140,9 +144,80 @@ int main(int argc, char *argv[])
 
   u32 total_waiting_time = 0;
   u32 total_response_time = 0;
+  u32 time = 0;
+  struct process *currNode;
+  bool finished = false;
 
-  /* Your code here */
-  /* End of "Your code here" */
+  for(int i = 0; i < size; ++i) {
+	  data[i].response_time_set = false;
+	  data[i].original_burst_time = data[i].burst_time;
+	  data[i].added = false;
+	  data[i].remaining = quantum_length;
+  }
+
+ 
+while(!finished) {
+  	for(u32 i = 0; i < size; ++i) {
+		if(time >= data[i].arrival_time && data[i].added == false) {
+			TAILQ_INSERT_TAIL(&list, &data[i], pointers);
+			data[i].added = true;
+		}
+	}
+ 	 
+
+  	/*TAILQ_FOREACH(currNode, &list, pointers) {
+	 	printf("pid : %u\n", currNode -> pid);
+	 	printf("arrival time: %u\n", currNode -> arrival_time);
+	 	printf("burst time: %u\n", currNode -> burst_time);
+		printf("remaining: %u\n", currNode -> remaining);
+
+ 	 }*/
+	
+	 currNode = TAILQ_FIRST(&list);
+	 if(currNode != NULL) {
+
+		 if(!currNode -> response_time_set) {
+	  		currNode -> response_time_set = true;
+			total_response_time += time - currNode -> arrival_time;
+			//printf("total response_time: %u\n", total_response_time);
+	 	 }
+
+	 	//printf("time: %u\n\n", time);
+
+		currNode->burst_time -= 1;
+		currNode->remaining -= 1;
+		++time;
+	
+		//since a process that pre-empts is inserted into the Quene after
+		//a process that just arrived, we have to check for arrivals here
+		//before we add remove and add our current node back
+
+  		for(u32 i = 0; i < size; ++i) {
+			if(time >= data[i].arrival_time && data[i].added == false) {
+				TAILQ_INSERT_TAIL(&list, &data[i], pointers);
+				data[i].added = true;
+			}
+		}
+	 	if(currNode -> burst_time == 0) {
+			
+			TAILQ_REMOVE(&list, TAILQ_FIRST(&list), pointers);
+			total_waiting_time += time - currNode -> arrival_time - currNode->original_burst_time;
+			//printf("total waiting time: %u\n", total_waiting_time);
+		}
+		else if(currNode -> remaining == 0) {
+			TAILQ_REMOVE(&list, TAILQ_FIRST(&list), pointers);
+			TAILQ_INSERT_TAIL(&list, currNode, pointers);
+			currNode-> remaining = quantum_length;
+		}
+	 }
+	 finished = true;
+	for(int i = 0; i < size; ++i) {
+		if(data[i].burst_time != 0) {
+			finished = false;
+		}
+	}
+
+  }
 
   printf("Average waiting time: %.2f\n", (float) total_waiting_time / (float) size);
   printf("Average response time: %.2f\n", (float) total_response_time / (float) size);
